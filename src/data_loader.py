@@ -1,41 +1,69 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from io import StringIO
 
 def load_and_clean_data(filepath):
     print(f"Loading file: {filepath}")
     
-    # استفاده از sep=None اجازه می‌دهد پانداز خودش تشخیص دهد جداکننده Tab است یا Comma یا Space
-    try:
+    if filepath.endswith('.arff'):
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+        
+        attributes = []
+        data_start_idx = 0
+        for i, line in enumerate(lines):
+            clean_line = line.strip()
+            if not clean_line: continue
+            if clean_line.lower().startswith('@attribute'):
+                parts = clean_line.split()
+                attr_name = parts[1].strip("'").strip('"')
+                attributes.append(attr_name)
+            elif clean_line.lower().startswith('@data'):
+                data_start_idx = i + 1
+                break
+        
+        data_content = "".join(lines[data_start_idx:])
+        df = pd.read_csv(StringIO(data_content), header=None, na_values='?')
+        df.columns = attributes
+    else:
         df = pd.read_csv(filepath, sep=None, engine='python')
-    except Exception as e:
-        print(f"Error reading the file: {e}")
-        return None
 
-    # حذف فاصله‌های خالی احتمالی از اول و آخر نام ستون‌ها
+    # حذف فضاهای خالی از نام ستون‌ها
     df.columns = df.columns.str.strip()
-    
-    print("Columns found in file:", df.columns.tolist()[:10]) # برای عیب‌یابی
 
-    if 'cancer' not in df.columns:
-        raise KeyError("Column 'cancer' not found! Please check your CSV file column names.")
+    # پیدا کردن ستون هدف: معمولاً آخرین ستونی است که عددی نیست
+    target_col = None
+    for col in reversed(df.columns):
+        if df[col].dtype == object or df[col].dtype == bool:
+            target_col = col
+            break
+    
+    if target_col is None: target_col = df.columns[-1]
+    
+    print(f"Detected target column: '{target_col}'")
 
-    # جدا کردن Target
-    y = df['cancer'].values
+    # تبدیل مقادیر هدف به رشته و پاکسازی (مهم برای ARFF)
+    y_raw = df[target_col].astype(str).str.strip().str.replace("b'", "").str.replace("'", "")
     
-    # پیدا کردن ستون‌هایی که داده‌های ژنی هستند (معمولاً از ستون ۶ به بعد)
-    # یا ستون‌هایی که با 'AFFX' یا اسامی مشابه شروع می‌شوند
-    # اینجا فرض می‌کنیم ۵ ستون اول اطلاعات جانبی هستند
-    X = df.drop(columns=['Samples', 'BM.PB', 'Gender', 'Source', 'tissue.mf', 'cancer'], errors='ignore')
-    
-    # تبدیل برچسب‌ها به عدد
     le = LabelEncoder()
-    y = le.fit_transform(y)
+    y = le.fit_transform(y_raw)
     
-    # نرمال‌سازی
+    # چاپ کلاس‌ها برای اطمینان
+    unique_y = np.unique(y)
+    print(f"Unique classes found: {unique_y} -> {le.classes_}")
+    
+    if len(unique_y) < 2:
+        print("CRITICAL WARNING: Only one class detected! Manual search for target...")
+        # اگر فقط یک کلاس پیدا شد، یعنی ستون هدف اشتباه انتخاب شده. ستون عددی آخر را تست می‌کنیم.
+        y = le.fit_transform(df.iloc[:, -1])
+    
+    # استخراج ویژگی‌ها (فقط ستون‌های عددی)
+    X = df.drop(columns=[target_col])
+    X = X.select_dtypes(include=[np.number])
+    
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    
     X_final = pd.DataFrame(X_scaled, columns=X.columns)
     
     print(f"Data loaded successfully! Shape: {X_final.shape}")
