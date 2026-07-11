@@ -1,6 +1,7 @@
 from src.data_loader import load_and_clean_data
 from src.shapley_filter import get_kSV_features
-from src.igwo_optimizer import IGWO_Optimizer
+# from src.igwo_optimizer import IGWO_Optimizer
+from src.hho_optimizer import HHO_Optimizer
 from src.visualizer import plot_results
 import pandas as pd
 import os
@@ -8,11 +9,11 @@ import os
 def main():
     # 1. لیست تمام دیتاست‌هایی که دانلود کردی (دقیقاً مطابق نام فایل‌هایت)
     dataset_files = [
-    # "Colon.arff",
-     "MLL.arff",
-    #  "Leukemia.arff",
-    #  "SRBCT.arff"
+     "SRBCT.arff"
     ]
+    #  "Leukemia.arff",
+    # "Colon.arff",
+    #  "MLL.arff",
     
     final_summary = []
 
@@ -36,7 +37,7 @@ def main():
             X_reduced = X[top_genes]
             
             # فاز 2: بهینه‌سازی IGWO (تنظیمات طلایی: 100 گرگ و 100 تکرار)
-            optimizer = IGWO_Optimizer(X_reduced, y, n_wolves=100, max_iter=100)
+            optimizer = HHO_Optimizer(X_reduced, y, n_hawks=50, max_iter=100)
             best_genes, best_acc, history = optimizer.optimize()
             
             # ذخیره نتیجه برای جدول نهایی
