@@ -9,10 +9,10 @@ import os
 def main():
     # 1. لیست تمام دیتاست‌هایی که دانلود کردی (دقیقاً مطابق نام فایل‌هایت)
     dataset_files = [
-     "SRBCT.arff"
+     "SRBCT.arff",
+     "Leukemia.arff",
     ]
-    #  "Leukemia.arff",
-    # "Colon.arff",
+    #  "Colon.arff",
     #  "MLL.arff",
     
     final_summary = []
