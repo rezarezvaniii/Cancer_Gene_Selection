@@ -1,0 +1,36 @@
+{
+  "Lung_Cancer.xlsx": {
+    "best_genes": [
+      "col_10787",
+      "col_9840",
+      "col_12052",
+      "col_10525",
+      "col_12535",
+      "col_8457",
+      "col_5568"
+    ],
+    "average_accuracy": 0.9368983957219253,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 10.0,
+      "gamma": "scale"
+    }
+  },
+  "DLBCL.xlsx": {
+    "best_genes": [
+      "col_4181",
+      "col_1867",
+      "col_1600",
+      "col_4385",
+      "col_134",
+      "col_1122",
+      "col_1698"
+    ],
+    "average_accuracy": 0.9958928571428572,
+    "svm_cfg": {
+      "kernel": "linear",
+      "C": 1.0,
+      "gamma": "scale"
+    }
+  }
+}

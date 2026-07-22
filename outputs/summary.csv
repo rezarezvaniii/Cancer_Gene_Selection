@@ -1,0 +1,3 @@
+Dataset,Best Avg Accuracy,Highest,Lowest,Selected Genes,SVM Kernel
+Lung_Cancer.xlsx,93.69%,95.05%,92.10%,7,rbf
+DLBCL.xlsx,99.59%,100.00%,98.57%,7,linear
