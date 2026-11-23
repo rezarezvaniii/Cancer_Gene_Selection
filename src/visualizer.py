@@ -36,7 +36,7 @@ def plot_dataset_results(dataset_name, all_results, out_dir="outputs"):
 def plot_summary_bar(summary_rows, out_dir="outputs"):
     os.makedirs(out_dir, exist_ok=True)
     names = [r["Dataset"] for r in summary_rows]
-    accs = [float(r["Best Avg Accuracy"].strip("%")) for r in summary_rows]
+    accs = [float(r["Average Accuracy (mean of n_runs)"].strip("%")) for r in summary_rows]
 
     fig, ax = plt.subplots(figsize=(10, 5))
     bars = ax.bar(names, accs, color="tab:green")

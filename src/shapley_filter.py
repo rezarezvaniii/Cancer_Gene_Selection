@@ -4,10 +4,17 @@ import shap
 from sklearn.ensemble import RandomForestClassifier
 
 
-def get_kSV_features(X, y, top_n=60, n_estimators=200, seed=42):
+def get_kSV_features(X, y, top_n=60, n_estimators=400, seed=42):
     print("Starting Phase 1: Fast Tree-SHAP Ranking...")
 
-    model = RandomForestClassifier(n_estimators=n_estimators, n_jobs=-1, random_state=seed)
+    # class_weight='balanced' مهمه چون بعضی دیتاست‌ها نامتوازن‌اند (مثلاً Colon: 40 تومور/22
+    # نرمال). بدون این، جنگل تصادفی به‌طور طبیعی گرایش به کلاس اکثریت پیدا می‌کنه و اهمیت
+    # ژن‌هایی که کلاس اقلیت رو جدا می‌کنن دست‌کم گرفته می‌شه. n_estimators هم از ۲۰۰ به ۴۰۰
+    # افزایش پیدا کرد تا رتبه‌بندی SHAP پایدارتر (کمتر وابسته به randomness) باشه.
+    model = RandomForestClassifier(
+        n_estimators=n_estimators, n_jobs=-1, random_state=seed,
+        class_weight="balanced",
+    )
     model.fit(X, y)
 
     try:

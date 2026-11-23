@@ -6,6 +6,7 @@
 - ارزیابی موازی جمعیت با joblib
 """
 
+import math
 import numpy as np
 from sklearn.model_selection import cross_val_score, StratifiedKFold, RepeatedStratifiedKFold
 from sklearn.svm import SVC
@@ -15,59 +16,106 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def adaptive_cv(y, max_splits=10):
+def levy_flight(shape, rng, beta=1.5):
+    """پرواز لِوی (الگوریتم Mantegna) — برای SBOA (مرحله‌ی سوم اکتشاف، Eq. 5 مقاله).
+    beta=1.5: مقدار استاندارد استفاده‌شده در اکثر مقالات متاهیوریستیک (از جمله SBOA اصلی)."""
+    num = math.gamma(1 + beta) * np.sin(np.pi * beta / 2)
+    den = math.gamma((1 + beta) / 2) * beta * (2 ** ((beta - 1) / 2))
+    sigma_u = (num / den) ** (1 / beta)
+    u = rng.normal(0, sigma_u, shape)
+    v = rng.normal(0, 1, shape)
+    return u / (np.abs(v) ** (1 / beta))
+
+
+def adaptive_n_splits(y, max_splits=10):
     """تعداد fold ها رو بر اساس کوچیک‌ترین کلاس تنظیم می‌کنه تا خطا نده (مهم برای دیتاست‌های خیلی کوچیک)."""
     _, counts = np.unique(y, return_counts=True)
-    n_splits = max(2, min(max_splits, int(counts.min())))
-    return StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+    return max(2, min(max_splits, int(counts.min())))
 
 
-def make_svm(kernel="rbf", C=10.0, gamma="scale", degree=3):
-    return SVC(kernel=kernel, C=C, gamma=gamma, degree=degree, random_state=42, tol=1e-4)
+def adaptive_cv(y, max_splits=10):
+    return StratifiedKFold(n_splits=adaptive_n_splits(y, max_splits), shuffle=True, random_state=42)
 
 
-def auto_select_kernel(X, y, candidates=None, verbose=True):
+def make_svm(kernel="rbf", C=10.0, gamma="scale", degree=3, class_weight=None):
+    return SVC(kernel=kernel, C=C, gamma=gamma, degree=degree, class_weight=class_weight,
+               random_state=42, tol=1e-4)
+
+
+def auto_select_kernel(X, y, candidates=None, verbose=True, n_repeats=3):
     """
-    قبل از شروع بهینه‌سازی، روی همون ژن‌های فیلتر شده با kSV، چند کرنل رو
-    با یک CV سریع امتحان می‌کنه و بهترین رو برمی‌گردونه.
-    این کار جایگزین حدس‌زدن دستی کرنل (poly طبق جدول مقاله) می‌شه و
-    باعث می‌شه کد روی هر دیتاستی خودش بهترین تنظیم رو پیدا کنه.
+    قبل از شروع بهینه‌سازی، روی همون ژن‌های فیلتر شده با kSV، چند ترکیب
+    kernel/C/class_weight رو با یک CV تکرارشونده امتحان می‌کنه و بهترین رو برمی‌گردونه.
+
+    نسبت به نسخه‌ی قبلی دو تغییر مهم:
+      1) هم با class_weight=None و هم class_weight='balanced' امتحان می‌شه.
+         دیتاست‌هایی مثل Colon (40 تومور / 22 نرمال) نامتوازن هستن و SVM بدون
+         class_weight گرایش به کلاس اکثریت پیدا می‌کنه که دقت رو پایین میاره.
+      2) چند مقدار C هم امتحان می‌شه (نه فقط یک عدد ثابت حدسی)، چون بهترین C
+         بین دیتاست‌ها فرق می‌کنه.
+      3) به‌جای یک StratifiedKFold ثابت، میانگین چند تکرار گرفته می‌شه تا
+         انتخاب کرنل به یک split خاص و شانسی وابسته نباشه (مهم برای دیتاست‌های
+         خیلی کوچیک مثل CNS با ۶۰ نمونه).
     """
     if candidates is None:
-        candidates = [
-            {"kernel": "rbf", "C": 10.0, "gamma": "scale"},
-            {"kernel": "poly", "C": 10.0, "gamma": 0.001, "degree": 3},
-            {"kernel": "linear", "C": 1.0, "gamma": "scale"},
-        ]
-    cv = adaptive_cv(y, max_splits=5)
+        candidates = []
+        for cw in (None, "balanced"):
+            for C in (1.0, 10.0, 100.0):
+                candidates.append({"kernel": "rbf", "C": C, "gamma": "scale", "class_weight": cw})
+                candidates.append({"kernel": "linear", "C": C, "gamma": "scale", "class_weight": cw})
+            candidates.append({"kernel": "poly", "C": 10.0, "gamma": 0.001, "degree": 3, "class_weight": cw})
+
     best_score, best_cfg = -np.inf, candidates[0]
     for cfg in candidates:
-        clf = make_svm(**cfg)
-        try:
-            score = cross_val_score(clf, X, y, cv=cv, n_jobs=1).mean()
-        except Exception:
-            score = -np.inf
+        scores = []
+        for r in range(n_repeats):
+            cv = StratifiedKFold(n_splits=adaptive_cv(y, max_splits=5).n_splits,
+                                  shuffle=True, random_state=100 + r)
+            clf = make_svm(**cfg)
+            try:
+                scores.append(cross_val_score(clf, X, y, cv=cv, n_jobs=1).mean())
+            except Exception:
+                scores.append(-np.inf)
+        score = float(np.mean(scores))
         if verbose:
-            print(f"   ⚙️  kernel={cfg['kernel']:<7} gamma={cfg.get('gamma')}\tCV acc={score:.4f}")
+            cw_tag = cfg.get("class_weight") or "none"
+            print(f"   ⚙️  kernel={cfg['kernel']:<7} C={cfg.get('C'):<6} gamma={cfg.get('gamma')} "
+                  f"class_weight={cw_tag:<8}\tCV acc={score:.4f}")
         if score > best_score:
             best_score, best_cfg = score, cfg
     if verbose:
-        print(f"   ✅ Auto-selected kernel: {best_cfg['kernel']} (CV acc={best_score:.4f})")
+        print(f"   ✅ Auto-selected config: {best_cfg} (CV acc={best_score:.4f})")
     return best_cfg
 
 
 class FitnessCache:
     """کش می‌کنه تا فیتنس یک زیرمجموعه‌ی ژنی که قبلاً محاسبه شده دوباره محاسبه نشه.
-    در HHO/IGWO خیلی از شاهین‌ها/گرگ‌ها بعد از باینری‌سازی به یک زیرمجموعه‌ی یکسان می‌رسند."""
+    در IGWO خیلی از گرگ‌ها بعد از باینری‌سازی به یک زیرمجموعه‌ی یکسان می‌رسند.
 
-    def __init__(self, X, y, svm_cfg, penalty_coef, n_features_total):
+    ⚠️ BUGFIX مهم (overfitting به CV): نسخه‌ی قبلی از یک StratifiedKFold *ثابت* (همون
+    یک تقسیم‌بندی، با random_state=42) برای ارزیابی فیتنس همه‌ی کاندیدها طی کل جستجو
+    استفاده می‌کرد. چون طی جستجو ده‌ها هزار زیرمجموعه‌ی یکتا امتحان می‌شه (روی Colon مثلاً
+    ۳۸۷۳۸ تا)، این یعنی الگوریتم عملاً داره دنبال زیرمجموعه‌ای می‌گرده که *دقیقاً روی همون
+    یک تقسیم‌بندی* بهترین امتیاز رو بگیره — که با دیتاست‌های کوچیک (Colon=62، CNS=60 نمونه)
+    یه سوگیری آماری کلاسیکه (به آزمایش نشون داده شد: فیتنس جستجو ۰.۹۱۷۹ می‌شد ولی ارزیابی
+    نهایی دقیق فقط ۸۵.۸۷٪ در می‌اومد، یعنی زیرمجموعه‌ی «برنده» فقط شانسی رو همون split
+    خوب بوده، نه واقعاً تعمیم‌پذیر). راه‌حل: به‌جای یک fold ثابت، از RepeatedStratifiedKFold
+    (چند تکرار تقسیم‌بندی متفاوت) میانگین گرفته می‌شه تا فیتنس جستجو به تعمیم‌پذیری واقعی
+    نزدیک‌تر باشه، نه نویز یک split خاص.
+
+    cv_splits/cv_repeats: تعداد fold و تکرار طی *جستجو* (نه ارزیابی نهایی). عدد نهایی
+    گزارش‌شده (Highest/Average/Lowest) هنوز جدا با evaluate_final_subset و
+    RepeatedStratifiedKFold کامل (تا ۱۰ fold، ۳۰ تکرار، دقیقاً مثل مقاله) محاسبه می‌شه."""
+
+    def __init__(self, X, y, svm_cfg, penalty_coef, n_features_total, cv_splits=5, cv_repeats=2):
         self.X = X
         self.y = y
         self.svm_cfg = svm_cfg
         self.penalty_coef = penalty_coef
         self.n_features_total = n_features_total
         self.cache = {}
-        self.cv = adaptive_cv(y)
+        n_splits = adaptive_n_splits(y, max_splits=cv_splits)
+        self.cv = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=cv_repeats, random_state=42)
 
     def _score_one(self, key):
         if key in self.cache:
@@ -110,6 +158,22 @@ class FitnessCache:
             return cross_val_score(clf, X_subset, self.y, cv=self.cv, n_jobs=1).mean()
         except Exception:
             return 0.0
+
+
+def evaluate_topk_subset(X, y, ranked_genes, k, svm_cfg, n_repeats=10, n_splits=None):
+    """
+    برای درخواست استاد: «همون تعداد ژنی که مقاله گزارش کرده رو بهش بده، ببین با همون
+    تعداد می‌تونه نتیجه‌ی خوب پیدا کنه یا نه». این تابع دقیقاً K تا از بالای لیست
+    ranked_genes (خروجی get_kSV_features، مرتب بر اساس اهمیت SHAP) رو برمی‌داره و
+    مثل evaluate_final_subset ارزیابی می‌کنه — بدون اینکه IGWO مجبور باشه خودش به K
+    ژن برسه. اگه نتیجه هنوز ضعیف بود، یعنی مشکل از «تعداد» ژن نیست، از «کدوم ژن‌ها»ست.
+    """
+    k = max(2, min(k, len(ranked_genes)))
+    top_k_genes = ranked_genes[:k]
+    result = evaluate_final_subset(X, y, top_k_genes, svm_cfg, n_repeats=n_repeats, n_splits=n_splits)
+    result["genes"] = top_k_genes
+    result["k"] = k
+    return result
 
 
 def evaluate_final_subset(X, y, genes, svm_cfg, n_repeats=5, n_splits=None):
