@@ -1,0 +1,15 @@
+Dataset,N Runs,Average Accuracy (mean of n_runs),Std,Highest (best run),Lowest (worst run),Selected Genes,Mean Selected Genes,SVM Kernel
+Prostate_Tumor.csv,30,96.90%,0.74,98.00%,95.01%,5,8.5,rbf
+Leukemia-3c.csv,30,99.54%,0.45,100.00%,98.24%,8,7.2,linear
+Leukemia_4c.csv,30,98.97%,0.61,99.81%,97.73%,9,8.9,linear
+Colon.arff,30,87.20%,1.75,91.30%,83.71%,12,11.3,rbf
+CNS.arff,30,92.44%,2.1,96.17%,88.28%,11,14.5,rbf
+Ovarian.arff,30,99.98%,0.06,100.00%,99.68%,3,3.0,rbf
+Leukemia.arff,30,99.68%,0.44,100.00%,98.42%,4,4.3,linear
+Breast.arff,30,89.70%,1.7,92.23%,85.21%,29,24.7,rbf
+MLL.arff,30,99.14%,0.74,100.00%,97.12%,5,6.1,linear
+SRBCT.arff,30,99.68%,0.39,100.00%,98.35%,9,7.1,rbf
+Lung_Cancer.xlsx,30,97.97%,0.38,98.82%,97.14%,20,21.2,rbf
+Lung_GSE18842.arff,30,99.91%,0.25,100.00%,98.93%,3,2.0,rbf
+Leukemia_GSE22529_U133A.arff,30,99.90%,0.12,100.00%,99.54%,3,2.1,rbf
+Breast_GSE10797.arff,30,96.28%,1.31,98.36%,92.60%,15,11.7,rbf

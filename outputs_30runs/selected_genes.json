@@ -1,0 +1,292 @@
+{
+  "Prostate_Tumor.csv": {
+    "best_genes": [
+      "gene4822",
+      "gene10129",
+      "gene1942",
+      "gene5013",
+      "gene7810"
+    ],
+    "average_accuracy": 0.9689515151515152,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": "balanced"
+    }
+  },
+  "Leukemia-3c.csv": {
+    "best_genes": [
+      "D88270_at",
+      "M23323_s_at",
+      "X95735_at",
+      "D88422_at",
+      "X82240_rna1_at",
+      "M37271_s_at",
+      "X17042_at",
+      "U65932_at"
+    ],
+    "average_accuracy": 0.9954012345679011,
+    "svm_cfg": {
+      "kernel": "linear",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Leukemia_4c.csv": {
+    "best_genes": [
+      "D88422_at",
+      "X95735_at",
+      "U45285_at",
+      "D63480_at",
+      "M37271_s_at",
+      "M98399_s_at",
+      "U72936_s_at",
+      "Z15115_at",
+      "X69398_at"
+    ],
+    "average_accuracy": 0.9897376543209876,
+    "svm_cfg": {
+      "kernel": "linear",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Colon.arff": {
+    "best_genes": [
+      "R87126",
+      "R36977",
+      "M16937",
+      "T47377",
+      "M76378",
+      "X63629",
+      "H43887",
+      "M26697",
+      "H40095",
+      "T62947",
+      "T57468",
+      "M94132"
+    ],
+    "average_accuracy": 0.8719920634920634,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "CNS.arff": {
+    "best_genes": [
+      "S76475_at",
+      "S66541_s_at",
+      "U48436_s_at",
+      "M63438_s_at",
+      "L43366_at",
+      "HG1862-HT1897_at",
+      "X52001_at",
+      "L40357_at",
+      "M32886_at",
+      "D17793_at",
+      "HG2157-HT2227_at"
+    ],
+    "average_accuracy": 0.9243703703703704,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Ovarian.arff": {
+    "best_genes": [
+      "MZ261.88643",
+      "MZ436.63379",
+      "MZ2.8864971"
+    ],
+    "average_accuracy": 0.9998338461538462,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Leukemia.arff": {
+    "best_genes": [
+      "D88422_at",
+      "Y07604_at",
+      "M31303_rna1_at",
+      "X70297_at"
+    ],
+    "average_accuracy": 0.9967757936507938,
+    "svm_cfg": {
+      "kernel": "linear",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Breast.arff": {
+    "best_genes": [
+      "Contig14882_RC",
+      "NM_013438",
+      "U45975",
+      "NM_001216",
+      "Contig51517_RC",
+      "NM_015681",
+      "U90911",
+      "NM_020123",
+      "Contig49388_RC",
+      "AL050227",
+      "NM_006763",
+      "NM_018351",
+      "Contig50120_RC",
+      "Contig51882_RC",
+      "Contig15031_RC",
+      "NM_003862",
+      "NM_001286",
+      "AF161553",
+      "Contig7258_RC",
+      "NM_017488",
+      "NM_009585",
+      "Contig44278_RC",
+      "D86971",
+      "NM_001789",
+      "S62027",
+      "NM_021082",
+      "AB037828",
+      "Contig27285_RC",
+      "Contig47544_RC"
+    ],
+    "average_accuracy": 0.8970197530864197,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 10.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "MLL.arff": {
+    "best_genes": [
+      "239_at",
+      "34168_at",
+      "32579_at",
+      "38046_at",
+      "40127_at"
+    ],
+    "average_accuracy": 0.9914246031746035,
+    "svm_cfg": {
+      "kernel": "linear",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Lung_Cancer.xlsx": {
+    "best_genes": [
+      "col_8882",
+      "col_3230",
+      "col_7383",
+      "col_11798",
+      "col_6418",
+      "col_6091",
+      "col_10891",
+      "col_1633",
+      "col_8443",
+      "col_12511",
+      "col_8472",
+      "col_10841",
+      "col_5292",
+      "col_9589",
+      "col_3073",
+      "col_4525",
+      "col_10175",
+      "col_9770",
+      "col_6655",
+      "col_8480"
+    ],
+    "average_accuracy": 0.9797385620915035,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 10.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Lung_GSE18842.arff": {
+    "best_genes": [
+      "212021_s_at",
+      "218726_at",
+      "241782_at"
+    ],
+    "average_accuracy": 0.9991234567901234,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Leukemia_GSE22529_U133A.arff": {
+    "best_genes": [
+      "222154_s_at",
+      "212192_at",
+      "217655_at"
+    ],
+    "average_accuracy": 0.9990444444444448,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  },
+  "Breast_GSE10797.arff": {
+    "best_genes": [
+      "209791_at",
+      "201839_s_at",
+      "214270_s_at",
+      "222271_at",
+      "210423_s_at",
+      "209272_at",
+      "201656_at",
+      "203249_at",
+      "217022_s_at",
+      "212782_x_at",
+      "211719_x_at",
+      "201509_at",
+      "202273_at",
+      "217428_s_at",
+      "202404_s_at"
+    ],
+    "average_accuracy": 0.9628148148148148,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": "balanced"
+    }
+  },
+  "SRBCT.arff": {
+    "best_genes": [
+      "gene2050",
+      "gene509",
+      "gene174",
+      "gene1085",
+      "gene236",
+      "gene255",
+      "gene567",
+      "gene251",
+      "gene2144"
+    ],
+    "average_accuracy": 0.9968179012345679,
+    "svm_cfg": {
+      "kernel": "rbf",
+      "C": 1.0,
+      "gamma": "scale",
+      "class_weight": null
+    }
+  }
+}
